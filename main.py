@@ -42,4 +42,8 @@ df.drop(['mom6-12m'], axis=1, inplace=True)
 df['dolvol'] = np.log(df.MthVol.shift(1))*df.MthPrc.shift(1) + np.log(df.MthVol.shift(2))*df.MthPrc.shift(2)
 df['turn'] = (df.MthVol.shift(1) + df.MthVol.shift(2) + df.MthVol.shift(3)) * df.ShrOut / 3
 
-df.to_csv(r'./temp/crsp_processed.csv')
+# 这里保存中间变量的原因详见temp/readme.md
+# df.to_csv(r'./temp/crsp_processed.csv')  # 其实涉及到I/O的都会很慢，我自己跑的时候就把这里注释掉了
+
+#%% 开始搞年度数据 compustat_annual
+
