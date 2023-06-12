@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -9,7 +10,7 @@ import warnings
 
 warnings.filterwarnings('ignore')
 
-import os
+import tool_func
 
 # %% 切换工作目录，这是为了防止数据文件和代码文件不在同一个目录下
 os.chdir(r"E:\Onedrive\OneDrive-personal\OneDrive\大学\大四下\投资中的数据分析方法\小组pre\show")
@@ -45,5 +46,27 @@ df['turn'] = (df.MthVol.shift(1) + df.MthVol.shift(2) + df.MthVol.shift(3)) * df
 # 这里保存中间变量的原因详见temp/readme.md
 # df.to_csv(r'./temp/crsp_processed.csv')  # 其实涉及到I/O的都会很慢，我自己跑的时候就把这里注释掉了
 
-#%% 开始搞年度数据 compustat_annual
+#%% 开始搞年度数据 compustat_annual, 先清洗一下
+df_comp = pd.read_csv(r'./raw_data/compustat_auunal.csv')
 
+# replaced by fxz
+used_tic = df.Ticker.unique()
+num_tics = used_tic.shape[0]
+df_comp2 = df_comp[df_comp.indfmt=='INDL']
+df2 = df_comp2[df_comp2.tic.isin(used_tic)]
+
+df2.drop(['gvkey', 'indfmt', 'consol', 'popsrc', 'datafmt', 'curcd'], axis=1, inplace=True)
+
+df2['year'] = df2.datadate.apply(lambda x: x.split(sep='-')[0])
+df2['month'] = df2.datadate.apply(lambda x: x.split(sep='-')[1])
+df2['year'] = df2['year'].astype(np.int32)
+df2['month'] = df2['month'].astype(np.int8)
+df2['realmonth'] = 12*(df2.year-1999) + df2.month
+
+df2['mkvalt2'] = df2.csho * df2.prcc_f
+
+#%% 还是年度数据 compustat_annual，开始往里面加因子
+# 比较耗时间，4min20s（i5 11300H + 32GB DRAM）
+df2 = df2.groupby('tic', as_index=False).apply(tool_func.get_factors_from_annual_data)
+
+#%% 上面的df2就是宇川写的那个compustat_0606.csv
