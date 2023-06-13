@@ -16,7 +16,7 @@ def get_annual_factors_return(source_df):
             source_df_q = tmp_source_df[tmp_source_df[label] >= tmp_source_df[label].quantile(0.1 * quant)][
                 tmp_source_df[label] <= tmp_source_df[label].quantile(0.1 * (quant + 1))]
             # ret = (source_df_q['MthRet'] * source_df_q['cap']).sum() / source_df_q['cap'].sum()
-            if source_df_q['cap'].empty:
+            if sum(source_df_q['cap'].abs()) == 0:
                 ret = 0
             else:
                 ret = np.average(source_df_q['MthRet'], weights=source_df_q['cap'].abs())

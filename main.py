@@ -15,7 +15,7 @@ import get_annual_factors_return
 
 warnings.filterwarnings('ignore')
 # %% 切换工作目录，这是为了防止数据文件和代码文件不在同一个目录下
-os.chdir(r"E:\Onedrive\OneDrive-personal\OneDrive\大学\大四下\投资中的数据分析方法\小组pre\show")
+# os.chdir(r"E:\Onedrive\OneDrive-personal\OneDrive\大学\大四下\投资中的数据分析方法\小组pre\show")
 
 # %% 开始处理月度数据crsp_monthly
 df = pd.read_csv(r".\raw_data\crsp_monthly.csv")
@@ -69,8 +69,10 @@ df2['realmonth'] = 12 * (df2.year - 1999) + df2.month
 df2['mkvalt2'] = df2.csho * df2.prcc_f
 
 # %% 还是年度数据 compustat_annual，开始往里面加因子
+
 # 比较耗时间，4min20s（i5 11300H + 32GB DRAM）
 df2 = df2.groupby('tic', as_index=False).apply(tool_func.get_factors_from_annual_data)
+
 
 # %% 上面的df2就是宇川写的那个compustat_0606.csv，接下来要搞出来月度的monthly_df
 # 这里宇川给了解释，这个地方是因为 那个market anomalies和portfolio是月度更新的
@@ -84,7 +86,7 @@ df2 = df2.groupby('tic', as_index=False).apply(tool_func.get_factors_from_annual
 # 这一步速度还能接受，1min左右(i5-11300H + 32GB DRAM)
 monthly_df = df2[(df2.realmonth >= -311) & (df2.realmonth <= -300)]
 
-for i in range(-310, 211):
+for i in range(-310, 212):
     monthly_df = pd.concat([monthly_df, df2[(df2.realmonth >= i - 6) & (df2.realmonth < i + 6)]], ignore_index=True)
 
 # %% 处理月度收益相关因子
@@ -129,9 +131,9 @@ del temp, temp2
 
 # %% 年度财报
 df['tic'] = df.Ticker
+monthly_df.realmonth = monthly_df.realmonth + 312
 cal_df2 = monthly_df.merge(df[['cap', 'MthRet', 'ret_ahead', 'realmonth', 'tic']], how='left')
 
-# cal_df2.dropna(subset=['cap', 'MthRet'], inplace=True)  # 这个有问题，这一步之前两百多万条数据，之后只有25万条，且都是99年之后的
 cal_df2.cap.replace(np.nan, 0, inplace=True)
 cal_df2.MthRet.replace(np.nan, 0, inplace=True)
 
@@ -163,7 +165,6 @@ temp3 = cal_df2.groupby('realmonth').apply(get_annual_factors_return.get_annual_
 temp4 = temp3.apply(pd.Series)
 temp4.rename(columns=lambda x: x + 1, inplace=True)
 temp4.rename(columns={271: 'realmonth'}, inplace=True)
-temp4.realmonth.astype(np.int32)
 
 res['realmonth'] = range(1, 529)
 realmonth_list = temp4['realmonth']
@@ -171,11 +172,11 @@ temp4.drop('realmonth',axis=1, inplace=True)
 temp4.rename(columns=lambda x: x+50, inplace=True)
 temp4['realmonth'] = realmonth_list
 res = res.set_index('realmonth').join(temp4.set_index('realmonth'), on='realmonth')
-del temp3, temp4
+# del temp3, temp4
 
 # %% 渐进PCA
 N = 320  # 32个因子*每个因子十个
-T = 276  #
+T = 516  # 43年*12个月
 
 R = np.array(res.iloc[:, 2:])
 rf_matrix = np.tile(rf_df.rf, (320, 1)).T
@@ -186,7 +187,7 @@ pca = PCA(n_components=9)
 pca.fit(ori_mat)
 eigenvalues, eigenvectors = np.linalg.eig(ori_mat)
 factors = eigenvectors[:, :9]
-factor_df = pd.DataFrame(factors, index=[i for i in range(13, 289)], columns=[i for i in range(1, 10)])
+factor_df = pd.DataFrame(factors, index=[i for i in range(1, 529)], columns=[i for i in range(1, 10)])
 factor_df.to_csv(r'output/factors.csv')
 
 # %% 描述性统计
