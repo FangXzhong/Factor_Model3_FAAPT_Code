@@ -92,3 +92,4 @@ def get_factors_from_annual_data(source_df):
     source_df['sp'] = source_df.sale / source_df.mkvalt2
     source_df['sp'].fillna(source_df.sale / source_df.mkvalt, inplace=True)
     return source_df
+
