@@ -14,7 +14,6 @@ def get_monthly_factors_return(source_df):
         for quant in range(10):
             tmp_cal_df_q = tmp_cal_df2[(tmp_cal_df2[label] >= tmp_cal_df2[label].quantile(0.1 * quant)) &
                                        (tmp_cal_df2[label] <= tmp_cal_df2[label].quantile(0.1 * (quant + 1)))]
-            # ret = (tmp_cal_df_q['MthRet'] * tmp_cal_df_q['cap']).sum() / tmp_cal_df_q['cap'].sum()
             if tmp_cal_df_q['cap'].empty:  # 没有满足条件的
                 ret = 0
             else:
