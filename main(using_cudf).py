@@ -70,11 +70,12 @@ df2['mkvalt2'] = df2.csho * df2.prcc_f
 # %% 还是年度数据 compustat_annual，开始往里面加因子
 
 # # 比较耗时间，4min20s（i5 11300H + 32GB DRAM）
-# df2 = df2.groupby('tic', as_index=False).apply(tool_func.get_factors_from_annual_data)
+df2 = df2.groupby('tic', as_index=False).apply(tool_func.get_factors_from_annual_data)
 
-df3 = cudf.from_pandas(df2)
-df3 = df3.groupby('tic', as_index=False).apply(tool_func.get_factors_from_annual_data)
-df2 = df3.to_pandas()
+# # 这里用CUDA反而更慢
+# df3 = cudf.from_pandas(df2)
+# df3 = df3.groupby('tic', as_index=False).apply(tool_func.get_factors_from_annual_data)
+# df2 = df3.to_pandas()
 
 # %% 上面的df2就是宇川写的那个compustat_0606.csv，接下来要搞出来月度的monthly_df
 # 这里宇川给了解释，这个地方是因为 那个market anomalies和portfolio是月度更新的
@@ -115,8 +116,14 @@ rf_df['realmonth'] = 12 * (rf_df['year'] - 1973) + rf_df['month']
 rf_df = rf_df.iloc[:528, :]  # 不知道为啥，下载的数据重复了一遍
 
 # %% 搞定月度return
-# 这一步速度还能接受，整个cell 1min10s左右(i5-11300H + 32GB DRAM)
-temp = cal_df1.groupby('realmonth').apply(get_monthly_factors_return.get_monthly_factors_return)
+# 这一步速度还能接受，整个cell用CPU跑1min10s左右(i5-11300H + 32GB DRAM)
+# temp = cal_df1.groupby('realmonth').apply(get_monthly_factors_return.get_monthly_factors_return)
+
+# 用cudf跑，rtx2060 laptop
+temp = cudf.from_pandas(cal_df1)
+temp = temp.groupby('realmonth').apply(get_monthly_factors_return.get_monthly_factors_return)
+temp = temp.to_pandas()
+
 temp2 = temp.apply(pd.Series)
 temp2.rename(columns=lambda x: x + 1, inplace=True)
 temp2.rename(columns={51: 'realmonth'}, inplace=True)
