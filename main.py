@@ -13,7 +13,7 @@ warnings.filterwarnings('ignore')
 # os.chdir(r"E:\Onedrive\OneDrive-personal\OneDrive\大学\大四下\投资中的数据分析方法\小组pre\show")
 
 # %% 开始处理月度数据crsp_monthly
-df = pd.read_csv(r".\raw_data\crsp_monthly.csv")
+df = pd.read_csv(r"./raw_data/crsp_monthly.csv")
 
 df['year'] = df.MthCalDt.apply(lambda x: x.split(sep='-')[0])
 df['month'] = df.MthCalDt.apply(lambda x: x.split(sep='-')[1])
@@ -65,7 +65,7 @@ df2['mkvalt2'] = df2.csho * df2.prcc_f
 
 # %% 还是年度数据 compustat_annual，开始往里面加因子
 
-# 比较耗时间，4min20s（i5 11300H + 32GB DRAM）
+# 比较耗时间，4min20s（i5 11300H + 32GB DRAM）, 5min(i7 9750H + 32GB DRAM)
 df2 = df2.groupby('tic', as_index=False).apply(tool_func.get_factors_from_annual_data)
 
 
@@ -108,7 +108,8 @@ rf_df['realmonth'] = 12 * (rf_df['year'] - 1973) + rf_df['month']
 rf_df = rf_df.iloc[:528, :]  # 不知道为啥，下载的数据重复了一遍
 
 # %% 搞定月度return
-# 这一步速度还能接受，整个cell 1min10s左右(i5-11300H + 32GB DRAM)
+# 这一步速度还能接受，整个cell 1min10s左右(i5-11300H + 32GB DRAM) 50s(i7 9750H +32GB DRAM)
+# 20230617优化，15s完成(i7 9750H)
 temp = cal_df1.groupby('realmonth').apply(get_monthly_factors_return.get_monthly_factors_return)
 temp2 = temp.apply(pd.Series)
 temp2.rename(columns=lambda x: x + 1, inplace=True)
@@ -155,6 +156,7 @@ cal_df2.acc.replace([-np.inf, np.inf], -0.0378, inplace=True)
 cal_df2.agr.replace([-np.inf, np.inf], 0.0247, inplace=True)
 
 # 这一步贼费时间，得26min(i5-11300H 32GB DRAM)
+# 20230617优化，1min50s（i7-9750H 32GB DRAM)
 temp3 = cal_df2.groupby('realmonth').apply(get_annual_factors_return.get_annual_factors_return)
 
 temp4 = temp3.apply(pd.Series)
