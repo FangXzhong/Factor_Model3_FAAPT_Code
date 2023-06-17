@@ -30,5 +30,5 @@ def get_annual_factors_return(source_df):
 
             res[j * 10:j * 10 + 10] = tmp_source_df.groupby('percent_flag').apply(
                 lambda x: sum(x.iloc[:, 1] * x.iloc[:, 2]) / sum(x.iloc[:, 2]) if sum(tmp_source_df['cap']) == 0 else 0)
-        print(j)
+        # print(j)
     return res
