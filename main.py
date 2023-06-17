@@ -2,11 +2,6 @@ import os
 import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
-from statsmodels.tsa.stattools import acf, pacf
-import matplotlib.pyplot as plt
-import seaborn as sns
-import statsmodels.api as sm
-import statsmodels.formula.api as smf
 import warnings
 
 import tool_func
