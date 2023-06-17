@@ -7,6 +7,7 @@ def get_annual_factors_return(source_df):
               'invest', 'lgr', 'grcapx', 'operprof', 'pchcapx', 'pchcurrat', 'pchdepr', 'pchsale-pchinvt', 'pchsaleinv',
               'quick', 'roaq', 'roeq', 'roic', 'rsup', 'salecash', 'saleinv', 'salerec', 'sgr', 'sp']
     res = pd.Series([0, ] * 270 + [source_df.realmonth.values[0], ])
+    # res = [0, ] * 270 + [source_df.realmonth.values[0], ]
     print(source_df.realmonth.values[0])
     set0 = set(range(10))  # 配合第23行那一段用
     for j in range(27):
